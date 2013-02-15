@@ -95,7 +95,7 @@ html, body, #app{
     resize: none;
     border: none;
     outline: none;
-    font-family: 'Quintessential', cursive;
+    font-family: 'Quintessential', Georgia, Times, serif;
     font-size: 28px;
     line-height: 46px;
     text-align: center;
@@ -127,7 +127,7 @@ html, body, #app{
 
 #front .v-center-inner{
     width: 100%;
-    font-family: 'Quintessential', cursive;
+    font-family: 'Quintessential', Georgia, Times, serif;
     font-size: 28px;
     line-height: 32px;
     text-align: center;

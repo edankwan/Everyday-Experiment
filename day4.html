@@ -1,0 +1,111 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>Day 4 - Belated Valentine's Day Card</title>
+        <link href='http://fonts.googleapis.com/css?family=Quintessential' rel='stylesheet' type='text/css'>
+        <link rel="stylesheet" href="css/reset.css">
+        <link rel="stylesheet" href="css/day4.css">
+
+        <script src="js/PerspectiveTransform.min.js"></script>
+        <script src="js/rAF.js"></script>
+        <script src="js/modernizr.min.js"></script>
+        <script src="js/dat.gui.min.js"></script>
+        <script src="js/stats.min.js"></script>
+        <script src="js/jquery.min.js"></script>
+        <script src="js/TweenMax.min.js"></script>
+        <script src="js/EKTweener.all.js"></script>
+
+        <!-- Library CDN
+        <script src="http://edankwan.github.com/PerspectiveTransform.js/js/PerspectiveTransform.min.js"></script>
+        <script src="https://gist.github.com/paulirish/1579671/raw/7f515ade253afbc860dac1f84e21998d54359d79/rAF.js"></script>
+        <script src="http://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+        <script src="http://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.5/dat.gui.min.js"></script>
+        <script src="https://raw.github.com/mrdoob/stats.js/master/build/stats.min.js"></script>
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+        <script src="http://cdnjs.cloudflare.com/ajax/libs/gsap/1.8.2/TweenMax.min.js"></script>
+        <script src="https://raw.github.com/edankwan/EKTweener.js/master/dist/EKTweener.all.js"></script>
+        -->
+    </head>
+    <body>
+        <div id="app">
+
+
+            <div id="envelope">
+                <div id="front" class="v-center-wrapper">
+                    <div class="v-center-outer">
+                        <div class="v-center-inner">To Your Mum</div>
+                    </div>
+                </div>
+                <div id="back"></div>
+                <div id="letter" class="v-center-wrapper">
+                    <div class="v-center-outer">
+                        <div id="textfield" class="v-center-inner"contenteditable></div>
+                    </div>
+                </div>
+                <div id="back-shadow"></div>
+                <div id="base"></div>
+                <div id="flip"></div>
+            </div>
+
+            <div id="btn">Send it!</div>
+            <div id="info">
+                <div class="msg">I am trying to make a small experiment everyday and post it to codepen. Please check out my:</div>
+                <a class="previous" href="http://codepen.io/edankwan/full/zbtKv">Previous Day</a>
+                <span class="next">Next Day</span>
+            </div>
+        </div>
+        <script>
+        (function(){
+            var hasStarted = false
+            var letter = document.getElementById('letter');
+            var envelope = document.getElementById('envelope');
+            var flip = document.getElementById('flip');
+            var btn = document.getElementById('btn');
+            var textfield = document.getElementById('textfield');
+            var info = document.getElementById('info');
+
+            var DEFAULT_MESSAGE = 'Type your message here to send<br> a belated Valentine\'s Day card to<br> the one your love!';
+
+            textfield.innerHTML = DEFAULT_MESSAGE;
+
+
+            function animate(){
+                if(hasStarted) return;
+                hasStarted = true;
+                EKTweener.to(btn, .5, {transform3d: 'scale', opacity: 0, ease: 'easeInBack'});
+
+                // AWESOME ANIMATION STACK!
+                EKTweener.to(letter, .5, {transform3d: 'translate3d(0,-640px,0)', ease: 'easeInBack', onComplete: function(){
+                    EKTweener.to(letter, .7, {transform3d: 'translate3d(0,0,0)', ease: 'easeOutCubic'});
+                    EKTweener.to(envelope, 1, {transform3d: 'translate3d(0,0,0) rotateY(30deg) rotateX(30deg)', ease: 'easeOutCubic', onComplete: function(){
+                        EKTweener.to(flip, .4, {transform3d: 'rotateX(.1deg) translate3d(0,0,.03px)', ease: 'easeOutCubic', onComplete: function(){
+                            EKTweener.to(envelope, .9, {transform3d: 'translate3d(0,0,0) rotateY(160deg) rotateX(20deg)', ease: 'easeOutCubic', onComplete: function(){
+                                EKTweener.to(envelope, .7, {transform3d: 'translate3d(0,-1000px,0) rotateY(160deg) rotateX(30deg)', ease: 'easeInBack', onComplete: function(){
+
+                                    //window.location.href = 'mailto:Your Mum?subject=Belated Valentine\'s Day Card&body=' + textfield.innerHTML;
+
+                                    info.style.display = 'block';
+                                    EKTweener.fromTo(info, .5, {transform3d: 'translate3d(0,120px,-40px) rotateX(-40deg)'}, {transform3d: 'translate3d(0,0,0)', opacity: 1})
+
+                                }});
+                            }});
+                        }});
+                    }});
+                }});
+            }
+
+            function messageClick(){
+                if(textfield.innerHTML == DEFAULT_MESSAGE) {
+                    textfield.innerHTML = '';
+                }
+            }
+
+            textfield.addEventListener('click', messageClick);
+            btn.addEventListener('click', animate);
+
+        }());
+        </script>
+    </body>
+</html>

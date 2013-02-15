@@ -1,0 +1,261 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>Day2 - Displacement Map Fake 3D with JS</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width">
+        <link href='css/reset.css' rel='stylesheet' type='text/css'>
+        <link href='http://fonts.googleapis.com/css?family=Roboto+Condensed:700' rel='stylesheet' type='text/css'>
+        <style>
+            html, body{
+                font-family: 'Roboto Condensed', sans-serif;
+                width: 100%;
+                height: 100%;
+                font-size: 72px;
+                overflow: hidden;
+
+                background: #ffffff; /* Old browsers */
+                background: -moz-radial-gradient(center, ellipse cover,  #ffffff 0%, #ebe8e3 100%); /* FF3.6+ */
+                background: -webkit-gradient(radial, center center, 0px, center center, 100%, color-stop(0%,#ffffff), color-stop(100%,#ebe8e3)); /* Chrome,Safari4+ */
+                background: -webkit-radial-gradient(center, ellipse cover,  #ffffff 0%,#ebe8e3 100%); /* Chrome10+,Safari5.1+ */
+                background: -o-radial-gradient(center, ellipse cover,  #ffffff 0%,#ebe8e3 100%); /* Opera 12+ */
+                background: -ms-radial-gradient(center, ellipse cover,  #ffffff 0%,#ebe8e3 100%); /* IE10+ */
+                background: radial-gradient(ellipse at center,  #ffffff 0%,#ebe8e3 100%); /* W3C */
+                filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#ebe8e3',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
+
+            }
+            #wrapper {
+                position: absolute;
+                width: 100%;
+                top: 50%;
+                margin-top: -36px;
+                text-align: center;
+
+
+            }
+            #wrapper > span {
+                display: inline-block;
+
+                -webkit-box-sizing: border-box;
+                -moz-box-sizing: border-box;
+                box-sizing: border-box;
+            }
+            #wrapper.shadow > span {
+                text-shadow: 8px 8px 10px rgba(0,0,0,.2);
+            }
+            #wrapper.border > span {
+                border: 1px solid rgba(0,0,0,.7);
+            }
+
+            #info {
+                position: absolute;
+                left: 0;
+                bottom: 0;
+                width: 300px;
+                padding: 20px;
+                background-color: #fff;
+
+                font-size: 14px;
+                line-height: 20px;
+
+                box-sizing: border-box;
+                box-shadow: 0 0 30px rgba(0,0,0,.1);
+            }
+
+            #info .msg {
+                margin-bottom: 8px;
+            }
+
+            #info span, #info a {
+                text-transform: uppercase;
+                font-weight: bold;
+                font-size: 12px;
+                color: #CCC;
+
+                margin-right: 5px;
+            }
+
+            #info a, #info a:hover, #info a:visited, #info a:active {
+                color: #c00;
+            }
+        </style>
+
+        <script src="js/PerspectiveTransform.min.js"></script>
+        <script src="js/rAF.js"></script>
+        <script src="js/modernizr.min.js"></script>
+        <script src="js/dat.gui.min.js"></script>
+        <script src="js/stats.min.js"></script>
+        <script src="js/jquery.min.js"></script>
+        <script src="js/TweenMax.min.js"></script>
+
+        <!-- Library CDN
+        <script src="http://edankwan.github.com/PerspectiveTransform.js/js/PerspectiveTransform.min.js"></script>
+        <script src="https://gist.github.com/paulirish/1579671/raw/7f515ade253afbc860dac1f84e21998d54359d79/rAF.js"></script>
+        <script src="http://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+        <script src="http://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.5/dat.gui.min.js"></script>
+        <script src="https://raw.github.com/mrdoob/stats.js/master/build/stats.min.js"></script>
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+        <script src="http://cdnjs.cloudflare.com/ajax/libs/gsap/1.8.2/TweenMax.min.js"></script>
+        -->
+    </head>
+    <body>
+        <div id="wrapper" class="shadow"></div>
+        <div id="info">
+            <div class="msg">I am trying to make a small experiment everyday and post it to codepen. Please check out my:</div>
+            <a class="next" target="_blank" href="http://codepen.io/edankwan/full/rhvbz">Next Day</a>
+        </div>
+        <script>
+
+            (function(document, window){
+
+                var letters = [];
+                var letterTransforms = [];
+                var testedWidths = [];
+                var wrapper = document.getElementById('wrapper');
+                var isUsingEmbeddedFont = false;
+                var beginTime = + new Date;
+                var topNodes = [];
+                var bottomNodes = [];
+                var wordWidth = 0;
+                var wordHeight = 0;
+
+                var wordLength = 0;
+                var nodeLength = 0;
+                var t = 0;
+
+                var gui = new dat.GUI();
+                var config = {
+                    word: 'Loading',
+                    speed: .1,
+                    topXOffset: -18,
+                    topYOffset: 52,
+                    bottomXOffset: 50,
+                    bottomYOffset: 60,
+                    showBorder: false,
+                    showShadow: true,
+                    updateText: updateText
+                }
+
+                gui.add(config, 'word');
+                gui.add(config, 'speed', -.2, .2).step(.01);
+                gui.add(config, 'topXOffset', -100, 100);
+                gui.add(config, 'topYOffset', -100, 100);
+                gui.add(config, 'bottomXOffset', -100, 100);
+                gui.add(config, 'bottomYOffset', -100, 100);
+                gui.add(config, 'showBorder').onChange(onBorderChange);
+                gui.add(config, 'showShadow').onChange(onShadowChange);
+                gui.add(config, 'updateText');
+
+                var CORNER_NAMES = ['topLeft', 'topRight', 'bottomLeft', 'bottomRight'];
+
+                function updateText(){
+                    for(i = 0, len = wordLength; i < len; i++) {
+                        wrapper.removeChild(letters[i]);
+                    }
+                    var word = config.word;
+                    wordLength = word.length;
+                    nodeLength = wordLength + 1;
+                    var i, len, letter;
+                    for(i = 0, len = wordLength; i < len; i++) {
+                        letters[i] = letter = document.createElement('span');
+                        letter.innerHTML = word.charAt(i);
+                        wrapper.appendChild(letter);
+                        if(!isUsingEmbeddedFont) testedWidths = letters[i].offsetWidth;
+                    }
+
+                    if(isUsingEmbeddedFont){
+                        init();
+                    }
+                }
+
+                function onBorderChange(){
+                     wrapper.classList.toggle('border');
+                }
+
+
+                function onShadowChange(value){
+                     wrapper.classList.toggle('shadow');
+                }
+
+                function initNodes(){
+                    var transform;
+                    var sum = 0;
+                    var height = wordHeight = letters[0].offsetHeight;
+                    topNodes[0] = {x: 0, y: 0};
+                    bottomNodes[0] = {x: 0, y: height};
+                    for(var i = 0, len = wordLength; i < len; i++) {
+                        letterTransforms[i] = transform = new PerspectiveTransform(letters[i], letters[i].offsetWidth, height, true);
+                        topNodes[i + 1] = { x: sum + transform.topRight.x, y: 0};
+                        bottomNodes[i + 1] = { x: sum + transform.bottomRight.x, y: height};
+                        transform.topLeft.baseX = transform.bottomLeft.baseX = transform.topRight.baseX = transform.bottomRight.baseX = sum;
+                        transform.topLeft.node = topNodes[i];
+                        transform.topRight.node =  topNodes[i + 1];
+                        transform.bottomLeft.node = bottomNodes[i];
+                        transform.bottomRight.node = bottomNodes[i + 1];
+
+                        sum += transform.topRight.x;
+                    }
+                    for(i = 0, len = nodeLength; i < len; i++) {
+                        topNodes[i].originX = topNodes[i].x;
+                        topNodes[i].originY = topNodes[i].y;
+                        bottomNodes[i].originX = bottomNodes[i].x;
+                        bottomNodes[i].originY = bottomNodes[i].y;
+                    }
+
+                    wordWidth = sum;
+                }
+
+                function render(){
+                    requestAnimationFrame(render);
+                    var i, j, len, sum, corner;
+                    if(!isUsingEmbeddedFont) {
+                        if(+new Date - beginTime > 1500) {
+                            // dude, you installed this font? okay, you win....
+                            isUsingEmbeddedFont = true;
+                        } else {
+                            for(i = 0, len = wordLength; i < len; i++) {
+                                if( letters[i].offsetWidth != testedWidths[i]){
+                                    isUsingEmbeddedFont = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if(!isUsingEmbeddedFont) return;
+
+                        initNodes();
+                    }
+
+
+
+                    t += config.speed;
+                    for(i = 0, len = nodeLength; i < len; i++) {
+                        topNodes[i].x = topNodes[i].originX + Math.sin(t + topNodes[i].originX / wordWidth) * config.topXOffset;
+                        topNodes[i].y = topNodes[i].originY + Math.sin(t + topNodes[i].originX / wordWidth) * config.topYOffset;
+                        bottomNodes[i].x = bottomNodes[i].originX + Math.sin(t + bottomNodes[i].originX / wordWidth) * config.bottomXOffset;
+                        bottomNodes[i].y = bottomNodes[i].originY + Math.sin(t + bottomNodes[i].originX / wordWidth) * config.bottomYOffset;
+                    }
+
+
+                    sum = 0;
+                    for(i = 0, len = wordLength; i < len; i++) {
+                        transform = letterTransforms[i];
+                        for(j = 0; j < 4; j++) {
+                            corner = transform[CORNER_NAMES[j]];
+                            corner.x = corner.node.x - corner.baseX;
+                            corner.y = corner.node.y;
+                            if(transform.checkError()==0){
+                                transform.update();
+                            }
+                        }
+                    }
+                }
+
+                updateText();
+                render();
+
+            }(document, window));
+
+        </script>
+    </body>
+</html>

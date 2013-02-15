@@ -1,0 +1,286 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>Day3 - Webcam + fake 3d</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width">
+        <link href='css/reset.css' rel='stylesheet' type='text/css'>
+        <style>
+            html, body{
+                width: 100%;
+                height: 100%;
+                overflow: hidden;
+                background: #000;
+            }
+            #container{
+                width: 100%;
+                height: 100%;
+            }
+            #dummy {
+                display: none;
+            }
+            #canvas {
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                width: 640px;
+                height: 480px;
+                margin-left: -360px;
+                margin-top: -240px;
+            }
+            #video {
+                width: 160px;
+                height: 120px;
+            }
+
+            #info {
+                position: absolute;
+                left: 0;
+                bottom: 0;
+                width: 300px;
+                padding: 20px;
+                background-color: rgba(0,0,0,.6);
+                color: #fff;
+
+                font-size: 14px;
+                line-height: 20px;
+
+                box-sizing: border-box;
+            }
+
+            #info .msg {
+                margin-bottom: 8px;
+            }
+
+            #info span, #info a {
+                text-transform: uppercase;
+                font-weight: bold;
+                font-size: 12px;
+                color: #CCC;
+
+                margin-right: 5px;
+            }
+
+            #info a, #info a:hover, #info a:visited, #info a:active {
+                color: #c00;
+            }
+
+        </style>
+
+        <script src="js/PerspectiveTransform.min.js"></script>
+        <script src="js/rAF.js"></script>
+        <script src="js/modernizr.min.js"></script>
+        <script src="js/dat.gui.min.js"></script>
+        <script src="js/stats.min.js"></script>
+        <script src="js/jquery.min.js"></script>
+        <script src="js/TweenMax.min.js"></script>
+
+        <!-- Library CDN
+        <script src="http://edankwan.github.com/PerspectiveTransform.js/js/PerspectiveTransform.min.js"></script>
+        <script src="https://gist.github.com/paulirish/1579671/raw/7f515ade253afbc860dac1f84e21998d54359d79/rAF.js"></script>
+        <script src="http://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+        <script src="http://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.5/dat.gui.min.js"></script>
+        <script src="https://raw.github.com/mrdoob/stats.js/master/build/stats.min.js"></script>
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+        <script src="http://cdnjs.cloudflare.com/ajax/libs/gsap/1.8.2/TweenMax.min.js"></script>
+        -->
+    <body>
+
+        <div id="container">
+            <img id="dummy" src="data:image/jpeg;base64,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" />
+            <canvas id="canvas" width="640" height="480"></canvas>
+            <video id="video" width="640" height="480" autoplay></video>
+
+            <div id="info">
+                <div class="msg">I am trying to make a small experiment everyday and post it to codepen. Please check out my:</div>
+                <a class="previous" target="_blank" href="http://codepen.io/edankwan/full/rhvbz">Previous Day</a>
+                <span class="next" target="_blank">Next Day</span>
+            </div>
+        </div>
+
+        <script>
+            (function(){
+
+                var gui = new dat.GUI();
+
+                // DOM
+                var container = document.getElementById('container');
+                var dummy = document.getElementById('dummy');
+                var canvas = document.getElementById('canvas');
+                var video = document.getElementById('video');
+
+                var canvasStyle = canvas.style;
+                var transformStyle = Modernizr.prefixed('transform');
+
+
+                var winWidth;
+                var winHeight;
+
+                var tx = 0;
+                var ty = 0;
+                var mx = 0; // mouse x
+                var my = 0; // mouse y
+
+                var videoReady = false;
+                var t = 0;
+
+                var config = {
+                    depth: 120,
+                    incX: 6,
+                    incY: 3,
+                    lineWidth: 0,
+                    maxRotateX: 20,
+                    maxRotateY: 20,
+                    goCrazy: false,
+                    scanlinePresent: function(){
+                        config.depth = 0;
+                        config.incX = 7;
+                        config.incY = 9;
+                        config.lineWidth = 8;
+                        config.goCrazy = false;
+                    },
+                    thinLinePresent: function(){
+                        config.depth = 100;
+                        config.incX = 7;
+                        config.incY = 6;
+                        config.lineWidth = 1;
+                        config.goCrazy = false;
+                    }
+                }
+
+                var ctx = canvas.getContext('2d');
+                var cache = document.createElement('canvas');
+                cache.width = 640;
+                cache.height = 480;
+                var cacheCtx = cache.getContext('2d');
+
+                function init(){
+
+                    navigator.getUserMedia  = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
+
+                    if (navigator.getUserMedia) {
+                        /* INITIALIZE STUFF HERE */
+                        gui.add(config, 'depth', -200, 200).listen();
+                        gui.add(config, 'incX', 1, 20).step(1).listen();
+                        gui.add(config, 'incY', 1, 20).step(1).listen();
+                        gui.add(config, 'lineWidth', 0, 30).listen();
+                        gui.add(config, 'maxRotateX', 0, 30);
+                        gui.add(config, 'maxRotateY', 0, 30);
+                        gui.add(config, 'goCrazy').listen();
+                        gui.add(config, 'scanlinePresent');
+                        gui.add(config, 'thinLinePresent');
+
+                        // CANVAS
+
+                        navigator.getUserMedia({audio: false, video: true}, initVideo, onFailed);
+                    }
+
+                    window.onresize = onResize;
+                    onResize();
+                    render();
+                }
+
+                function onFailed(){
+                    // REJECTED?6
+                }
+
+                function initVideo(stream){
+
+                    video.src = window.URL.createObjectURL(stream);
+                    container.onmousemove = onMouseMove;
+                    videoReady = true;
+                }
+
+                function onMouseMove(e){
+                    tx = e.pageX / winWidth * 2 - 1;
+                    ty = e.pageY / winHeight * 2 - 1;
+                }
+
+                function onResize(){
+                    winWidth = window.innerWidth;
+                    winHeight = window.innerHeight;
+                }
+
+                function render(){
+                    requestAnimationFrame(render);
+
+                    var i, j, current, target;
+                    var depth = config.depth;
+
+                    if(videoReady) {
+                        // lazy easing
+                        mx += (tx - mx) * .05;
+                        my += (ty - my) * .05;
+                        cacheCtx.drawImage(video, 0, 0);
+                    } else {
+                        mx = tx = Math.sin(t+=.02) * Math.sin(t*2);
+                        my = ty = Math.sin(t * 1.5) * Math.cos(t*3);
+                        cacheCtx.drawImage(dummy, 0, 0);
+                    }
+                    var cacheData = cacheCtx.getImageData(0, 0, 640, 480).data;
+
+                    ctx.clearRect(0, 0, 640, 480);
+                    ctx.globalCompositeOperation = 'lighter';
+
+                    for(i = 0, j = cacheData.length; i < j; i += 4) {
+                        cacheData[i+3] = 0;
+                    }1
+
+                    var x, y, px, py, offset;
+                    var depth = config.depth;
+                    var gradient;
+                    var incX = config.incX;
+                    var incY = config.incY;
+                    var lineWidth = config.lineWidth;
+                    var goCrazy = config.goCrazy;
+
+                    for(y = 0; y < 480; y+= incY) {
+                        gradient = ctx.createLinearGradient(0,0,640,0);
+                        ctx.beginPath();
+                        for(x = 0; x < 640; x+=incX) {
+
+                            current = y * 640 + x << 2;
+                            offset = (cacheData[current] + cacheData[current + 1] + cacheData[current + 2]) / 255 / 3;
+                            if(goCrazy) {
+                                px = x + offset * (x - 320) / 320 * -mx * depth * depth>> 0;
+                                py = y + offset * (y - 240) / 240 * -my * depth * depth>> 0;
+                            } else {
+                                px = x + offset * -mx* depth >> 0;
+                                py = y + offset * -my * depth >> 0;
+                            }
+
+                            // clamp
+                            if(px < 0){
+                                px = 0;
+                            } else if(px > 639){
+                                px = 639;
+                            }
+                            if(py < 0){
+                                py = 0;
+                            } else if(py > 479){
+                                py = 479;
+                            }
+
+                            if(x == 0) {
+                                ctx.moveTo(px, py);
+                            } else {
+                                ctx.lineTo(px, py);
+                            }
+                            target = py * 640 + px << 2;
+                            gradient.addColorStop(px / 640, 'rgb(' + cacheData[target] + ',' + cacheData[target + 1] + ',' + cacheData[target + 2] + ')');
+                        }
+                        ctx.strokeStyle = gradient;
+                        ctx.lineWidth = lineWidth;
+                        ctx.stroke();
+                    }
+
+                    canvasStyle[transformStyle] = 'perspective(600) rotateY(' + (mx * config.maxRotateY) + 'deg) rotateX(' + (-my * config.maxRotateX) + 'deg) scale3d(-1.5,1.5,1)';
+                }
+
+                init();
+            }());
+
+        </script>
+    </body>
+</html>

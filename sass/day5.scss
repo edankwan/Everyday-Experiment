@@ -49,22 +49,33 @@ html, body{
     line-height: 20px;
 
     box-sizing: border-box;
+
+    .msg {
+        margin-bottom: 8px;
+    }
+
+    span, a {
+        margin-right: 5px;
+        text-transform: uppercase;
+        font-weight: bold;
+        font-size: 12px;
+    }
+
+    span {
+        color: #CCC;
+    }
+    a, a:hover, a:visited, a:active {
+        color: #c00;
+    }
 }
 
-#info .msg {
-    margin-bottom: 8px;
-}
+#credit {
+    position: absolute;
+    right: 5px;
+    bottom: 5px;
 
-#info span, #info a {
-    text-transform: uppercase;
-    font-weight: bold;
-    font-size: 12px;
-    color: #CCC;
-
-    margin-right: 5px;
-}
-
-#info a, #info a:hover, #info a:visited, #info a:active {
-    color: #c00;
+    a, a:hover, a:visited, a:active {
+        color: #c00;
+    }
 }
 

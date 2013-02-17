@@ -54,22 +54,33 @@ html, body {
   line-height: 20px;
   box-sizing: border-box;
 }
-
-/* line 54, ../sass/day5.scss */
+/* line 53, ../sass/day5.scss */
 #info .msg {
   margin-bottom: 8px;
 }
-
-/* line 58, ../sass/day5.scss */
+/* line 57, ../sass/day5.scss */
 #info span, #info a {
+  margin-right: 5px;
   text-transform: uppercase;
   font-weight: bold;
   font-size: 12px;
-  color: #CCC;
-  margin-right: 5px;
 }
-
+/* line 64, ../sass/day5.scss */
+#info span {
+  color: #CCC;
+}
 /* line 67, ../sass/day5.scss */
 #info a, #info a:hover, #info a:visited, #info a:active {
+  color: #c00;
+}
+
+/* line 72, ../sass/day5.scss */
+#credit {
+  position: absolute;
+  right: 5px;
+  bottom: 5px;
+}
+/* line 77, ../sass/day5.scss */
+#credit a, #credit a:hover, #credit a:visited, #credit a:active {
   color: #c00;
 }

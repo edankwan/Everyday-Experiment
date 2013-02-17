@@ -1,0 +1,132 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>Day 5 - Webkit-Mask 3D Landscape</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width">
+        <link rel="stylesheet" href="css/reset.css">
+        <link href='css/day5.css' rel='stylesheet' type='text/css'>
+        <script src="js/PerspectiveTransform.min.js"></script>
+        <script src="js/rAF.js"></script>
+        <script src="js/modernizr.min.js"></script>
+        <script src="js/dat.gui.min.js"></script>
+        <script src="js/stats.min.js"></script>
+        <script src="js/jquery.min.js"></script>
+        <script src="js/TweenMax.min.js"></script>
+
+        <!-- Library CDN
+        <script src="http://edankwan.github.com/PerspectiveTransform.js/js/PerspectiveTransform.min.js"></script>
+        <script src="https://gist.github.com/paulirish/1579671/raw/7f515ade253afbc860dac1f84e21998d54359d79/rAF.js"></script>
+        <script src="http://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+        <script src="http://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.5/dat.gui.min.js"></script>
+        <script src="https://raw.github.com/mrdoob/stats.js/master/build/stats.min.js"></script>
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+        <script src="http://cdnjs.cloudflare.com/ajax/libs/gsap/1.8.2/TweenMax.min.js"></script>
+        -->
+    </head>
+    <body>
+        <div id="wrapper">
+            <div id="container">
+                <div id="ground"></div>
+            </div>
+        </div>
+        <div id="info">
+            <div class="msg">I am trying to make a small experiment everyday and post it to codepen. Please check out my:</div>
+            <a class="previous" target="_blank" href="http://codepen.io/edankwan/full/dpcxL">Previous Day</a>
+            <span class="next">Next Day</span>
+        </div>
+        <script>
+            (function(){
+
+                var gui = new dat.GUI();
+
+                var wrapper = document.getElementById('wrapper');
+                var container = document.getElementById('container');
+                var ground = document.getElementById('ground');
+
+
+                var containerStyle = container.style;
+                var groundStyle = ground.style;
+                var groundTransform;
+
+                var winWidth;
+                var winHeight;
+
+                var tx = 0;
+                var ty = 0;
+                var mx = 0; // mouse x
+                var my = 0; // mouse y
+
+                var transformStyle = Modernizr.prefixed('transform');
+
+                var config = {
+                    useWebkitMask: true,
+                    reset: function(){
+                        config.groundOffsetX = 50
+                        config.groundOffsetY = 30
+                        config.farTransparency = 0.7
+                        config.nearPercentage = 40
+                        config.useWebkitMask = true
+                    }
+                }
+
+
+                function init(){
+
+                    /* INITIALIZE STUFF HERE */
+                    groundTransform = new PerspectiveTransform(ground, 1200, 303);
+
+                    config.reset();
+                    gui.add(config, 'groundOffsetX', 0, 200).listen();
+                    gui.add(config, 'groundOffsetY', 0, 200).listen();
+                    gui.add(config, 'farTransparency', 0, 1).listen().onChange(onWebkitMaskUpdate);
+                    gui.add(config, 'nearPercentage', 0, 100).listen().onChange(onWebkitMaskUpdate);
+                    gui.add(config, 'useWebkitMask').onChange(onWebkitMaskUpdate);
+
+                    onWebkitMaskUpdate();
+                    window.onresize = onResize;
+                    onResize();
+                    render();
+                    window.onmousemove = onMouseMove;
+                }
+
+                function onMouseMove(e){
+                    tx = e.pageX / winWidth * 2 - 1;
+                    ty = e.pageY / winHeight * 2 - 1;
+                }
+
+                function onResize(){
+                    winWidth = window.innerWidth;
+                    winHeight = window.innerHeight;
+                }
+
+                function onWebkitMaskUpdate(){
+                    groundStyle.webkitMask = config.useWebkitMask ? '-webkit-linear-gradient(top,  rgba(0,0,0,' + config.farTransparency + ') 0%,rgba(0,0,0,1) ' + config.nearPercentage  +'%)' : 'none';
+                }
+
+                function render(){
+                    requestAnimationFrame(render);
+                    /* RENDER STUFF HERE */
+                    mx += (tx - mx) * .05;
+                    my += (ty - my) * .05;
+
+                    containerStyle[transformStyle] = 'perspective(500px) scale3d(2,2,1)rotateY(' + (mx * 8) + 'deg) rotateX(' + (-my * 7) + 'deg) translateZ(-500px) ';
+                    groundTransform.bottomLeft.x = (mx - 1) *  config.groundOffsetX;
+                    groundTransform.bottomLeft.y = 303 + my * config.groundOffsetY;
+                    groundTransform.bottomRight.x = 1200 + (mx + 1) * config.groundOffsetX;
+                    groundTransform.bottomRight.y = 303 + my * config.groundOffsetY;
+                    groundTransform.update();
+                }
+
+
+
+
+
+                return init;
+
+            }())();
+
+        </script>
+    </body>
+</html>

@@ -12,5 +12,7 @@ Because of those reasons above, I will have to make something small but interest
  - Day3 [Webcam + fake 3d ](http://codepen.io/edankwan/pen/zbtKv)
  - Day4 [Belated Valentine's Day Card](http://codepen.io/edankwan/pen/dpcxL)
  - Day5 [Webkit-Mask 3D Landscape](http://codepen.io/edankwan/pen/HokCx)
- - Day6 [Day 6 - Threejs First Try](http://codepen.io/edankwan/pen/rcKAF)
- - Day7 [Day 7 - Autumn Leaves](http://codepen.io/edankwan/pen/swero)
+ - Day6 [Threejs First Try](http://codepen.io/edankwan/pen/rcKAF)
+ - Day7 [Autumn Leaves](http://codepen.io/edankwan/pen/swero)
+
+##### Due to the deadly deadline of the project from my day job, I gotta stop doing it for a week and be back on 26th Feb

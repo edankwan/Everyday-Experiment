@@ -1,0 +1,91 @@
+html, body{
+    font-family: 'Arial Narrow', 'Century Gothic', Arial, Helvetica, sans-serif;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    color: #fff;
+    background-color: #101010;
+
+    -webkit-perspective: 800px;
+    -moz-perspective: 800px;
+    -ms-perspective: 800px;
+    perspective: 800px;
+}
+#container{
+    width: 100%;
+    height: 100%;
+
+    -webkit-transform-style: preserve-3d;
+    -moz-transform-style: preserve-3d;
+    -ms-transform-style: preserve-3d;
+    transform-style: preserve-3d;
+
+}
+
+#bg {
+    position: absolute;
+    width: 1920px;
+    height: 1080px;
+
+    background-image: url(../images/day7/bg.jpg);
+}
+
+.leaf {
+    position: absolute;
+    width: 154px;
+    height: 254px;
+
+    background-image: url(../images/day7/leaf.png);
+
+    -webkit-transform-style: preserve-3d;
+    -moz-transform-style: preserve-3d;
+    -ms-transform-style: preserve-3d;
+    transform-style: preserve-3d;
+}
+
+#info {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 300px;
+    padding: 20px;
+    background-color: rgba(0,0,0,.6);
+    color: #fff;
+
+    font-size: 14px;
+    line-height: 20px;
+
+    box-sizing: border-box;
+
+    .msg {
+        margin-bottom: 8px;
+    }
+
+    span, a {
+        margin-right: 5px;
+        text-transform: uppercase;
+        font-weight: bold;
+        font-size: 12px;
+    }
+
+    span {
+        color: #CCC;
+    }
+    a, a:hover, a:visited, a:active {
+        color: #c00;
+    }
+}
+
+#credit {
+    position: absolute;
+    right: 5px;
+    bottom: 5px;
+    font-size: 11px;
+
+    a, a:hover, a:visited, a:active {
+        color: #c00;
+
+        text-transform: uppercase;
+    }
+}
+

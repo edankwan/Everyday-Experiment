@@ -1,0 +1,225 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>Day 7 - Threejs First Try</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width">
+        <link rel="stylesheet" href="css/reset.css">
+        <link rel="stylesheet" href="css/day7.css">
+        <script src="js/PerspectiveTransform.min.js"></script>
+        <script src="js/rAF.js"></script>
+        <script src="js/modernizr.min.js"></script>
+        <script src="js/dat.gui.min.js"></script>
+        <script src="js/stats.min.js"></script>
+        <script src="js/jquery.min.js"></script>
+        <script src="js/TweenMax.min.js"></script>
+        <script src="js/three.min.js"></script>
+        <script src="js/tween.min.js"></script>
+
+        <!-- Library CDN
+        <script src="http://edankwan.github.com/PerspectiveTransform.js/js/PerspectiveTransform.min.js"></script>
+        <script src="https://gist.github.com/paulirish/1579671/raw/7f515ade253afbc860dac1f84e21998d54359d79/rAF.js"></script>
+        <script src="http://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+        <script src="http://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.5/dat.gui.min.js"></script>
+        <script src="https://raw.github.com/mrdoob/stats.js/master/build/stats.min.js"></script>
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+        <script src="http://cdnjs.cloudflare.com/ajax/libs/gsap/1.8.4/TweenMax.min.js"></script>
+        <script src="https://raw.github.com/mrdoob/three.js/master/build/three.min.js"></script>
+        -->
+    </head>
+    <body>
+        <div id="container">
+            <div id="bg"></div>
+        </div>
+        <div id="info">
+            <div class="msg">I am trying to make a small experiment everyday and post it to codepen. Please check out my:</div>
+            <a class="previous" target="_blank" href="http://codepen.io/edankwan/pen/rcKAF">Previous Day</a>
+            <span class="next">Next Day</span>
+        </div>
+        <div id="credit"><a href="http://www.sxc.hu/photo/1402504/" target="_blank">Leaf 35</a> by <a href="http://www.sxc.hu/profile/ba1969" target="_blank">Billy Alexander</a> and <a href="http://www.sxc.hu/photo/1408248" target="_blank">Spruce and Scots Pine Tree Forest</a> by <a href="http://www.sxc.hu/profile/Krappweis" target="_blank">Andreas Krappweis</a></div>
+        <script>
+            (function(){
+
+                var Leaf = (function(){
+                    function Leaf(cfg){
+                        for(var key in cfg) this[key] = cfg[key]; // mixIn
+                        this.dom = document.createElement('div');
+                        this.dom.className = 'leaf';
+                        this.domStyle = this.dom.style;
+                    }
+
+                    var _p = Leaf.prototype;
+                    var transformStyle = Modernizr.prefixed('transform');
+
+                    var FAR = 2000;
+                    var NEAR = 400;
+
+                    var WIDTH = 154;
+                    var HEIGHT = 254;
+
+                    var pool = Leaf.pool = [];
+                    var freeLeaves = [];
+
+                    Leaf.length = 0;
+
+                    Leaf.get = function(){
+                        if(freeLeaves.length > 0) return freeLeaves.pop();
+                        var leaf =  pool[pool.length] = new Leaf({id: pool.length});
+                        Leaf.length = pool.length;
+                        return leaf;
+                    }
+
+                    _p.reset = function reset() {
+                        this.z= NEAR + Math.random() * (FAR - NEAR);
+                        this.scale = PERSPECTIVE / this.z;
+                        this.z = PERSPECTIVE - this.z;
+                        this.x = Math.random() * winWidth / this.scale;
+                        this.y = -300 / this.scale;
+                        this.domStyle.webkitFilter = 'blur(' + Math.abs(this.z / 70) + 'px)';
+                        this.active = false;
+
+                        this.rx = Math.random() * 360;
+                        this.ry = Math.random() * 360;
+                        this.rz = Math.random() * 360;
+
+                        this.scale
+
+                        this.vx = (Math.random() - .5) * 4;
+                        this.vy = 2.5 + Math.random() * 2.5;
+                        this.vrx = Math.random() * .5;
+                        this.vry = Math.random() * .5;
+                        this.vrz = Math.random() * .5;
+                    }
+
+                    _p.start = function start() {
+                        this.active = true;
+                        container.appendChild(this.dom);
+                        var i = freeLeaves.length;
+                        while(i--){
+                            if(this == freeLeaves[i]) {
+                                freeLeaves.splice(i, 1);
+                                break;
+                            }
+                        }
+                        pool.push();
+                    }
+
+                    _p.stop = function stop() {
+                        this.active = false;
+                        freeLeaves.push(leaf);
+                    }
+
+                    _p.render = function render(){
+                        if(!this.active) return;
+                        this.domStyle[transformStyle] = 'translate3d(' + (this.x += this.vx) + 'px,' + (this.y += this.vy) + 'px,' + this.z + 'px) rotateX(' + (this.rx += this.vrx) + 'deg) rotateY(' + (this.ry += this.vry) + 'deg) rotateZ(' + (this.rz += this.vrz) + 'deg)';
+
+                        if((this.y - 300) * this.scale > winHeight ) {
+                            this.stop();
+                        }
+                    }
+
+                    return Leaf;
+
+                }());
+
+                var gui = new dat.GUI();
+
+                var tx = 0;
+                var ty = 0;
+                var mx = 0; // mouse x
+                var my = 0; // mouse y
+                var count = 0;
+
+                var container = document.getElementById('container');
+                var containerStyle = container.style;
+
+                var bg = document.getElementById('bg');
+                var bgStyle = bg.style;
+
+                var winWidth = window.innerWidth;
+                var winHeight = window.innerHeight;
+
+                var config = {
+                    interval: 20
+                }
+
+                var PERSPECTIVE = 800;
+                var BG_WIDTH = 1920;
+                var BG_HEIGHT = 1080;
+
+                var transformStyle = Modernizr.prefixed('transform');
+
+                function init(){
+
+                    gui.add(config, 'interval', 5, 100).listen();
+
+                    reset();
+
+                    window.onresize = onResize;
+                    onResize();
+                    render();
+                    window.onmousemove = onMouseMove;
+                }
+
+                function reset(){
+                    var i, len, leaf;
+                    i = Leaf.pool.length;
+                    while(i--){
+                        leaf = Leaf.pool[i];
+                        leaf.stop();
+                    }
+
+                }
+
+                function onMouseMove(e){
+                    tx = e.pageX / winWidth * 2 - 1;
+                    ty = e.pageY / winHeight * 2 - 1;
+                }
+
+                function onResize(){
+                    winWidth = window.innerWidth;
+                    winHeight = window.innerHeight;
+
+                    var coverRatio = winWidth / BG_WIDTH > winHeight / BG_HEIGHT ?winWidth / BG_WIDTH  : winHeight / BG_HEIGHT;
+                    bgStyle[transformStyle] = 'scale3d(' + (coverRatio * 14) + ',' + (coverRatio * 14) + ',1) translate3d(0,0,-6400px)';
+
+                }
+
+
+                var t = 0;
+                var bt = 0;
+                var lt = 0;
+
+                function render(){
+                    requestAnimationFrame(render);
+
+                    mx += (tx - mx) * .05;
+                    my += (ty - my) * .05;
+
+                    if(count > config.interval) {
+                        count = 0;
+                        leaf = Leaf.get();
+                        leaf.reset();
+                        leaf.start();
+                    }
+
+                    var i = Leaf.pool.length;
+                    while(i--){
+                        leaf = Leaf.pool[i];
+                        leaf.render();
+                    }
+
+                    containerStyle[transformStyle] = 'rotateY(' + (mx * 8) + 'deg) rotateX(' + (-my * 7) + 'deg) ';
+                    
+
+                    count++;
+                }
+
+                return init;
+
+            }())();
+
+        </script>
+    </body>
+</html>
